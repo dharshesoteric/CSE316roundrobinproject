@@ -1,0 +1,77 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct Process {
+    int processID;
+    int arrivalTime;
+    int burstTime;
+} Process;
+
+void generateRandomProcesses(Process processes[], int numProcesses, int maxArrivalTime, int maxBurstTime) {
+    srand(time(NULL));
+    for (int i = 0; i < numProcesses; i++) {
+        processes[i].processID = i;
+        processes[i].arrivalTime = rand() % (maxArrivalTime + 1);
+        processes[i].burstTime = 1 + rand() % maxBurstTime;
+    }
+}
+
+void simulateRoundRobin(Process processes[], int numProcesses, int timeSlice) {
+    int currentTime = 0;
+    int totalWaitingTime = 0;
+    int totalTurnaroundTime = 0;
+
+    printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n");
+
+    for (int i = 0; i < numProcesses; i++) {
+        int waitingTime = 0;
+        if (processes[i].arrivalTime > currentTime) {
+            currentTime = processes[i].arrivalTime;
+        }
+        waitingTime = currentTime - processes[i].arrivalTime;
+        totalWaitingTime += waitingTime;
+        currentTime += processes[i].burstTime;
+        int turnaroundTime = currentTime - processes[i].arrivalTime;
+        totalTurnaroundTime += turnaroundTime;
+
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].processID, processes[i].arrivalTime, processes[i].burstTime, waitingTime, turnaroundTime);
+    }
+
+    float avgWaitingTime = (float)totalWaitingTime / numProcesses;
+    float avgTurnaroundTime = (float)totalTurnaroundTime / numProcesses;
+
+    printf("Average waiting time: %.2f\n", avgWaitingTime);
+    printf("Average turnaround time: %.2f\n", avgTurnaroundTime);
+
+    int idealWaitingTime = 0;
+    int idealTurnaroundTime = 0;
+    for (int i = 0; i < numProcesses; i++) {
+        idealTurnaroundTime += processes[i].burstTime;
+    }
+
+    printf("Ideal waiting time: %d\n", idealWaitingTime);
+    printf("Ideal turnaround time: %d\n", idealTurnaroundTime);
+}
+
+int main() {
+   
+    int maxArrivalTime = 20;
+    int maxBurstTime = 10;
+    int numProcesses;
+    int timeSlice;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &numProcesses);
+
+    printf("Enter the time slice (quantum time): ");
+    scanf("%d", &timeSlice);
+
+    Process processes[numProcesses];
+
+    generateRandomProcesses(processes, numProcesses, maxArrivalTime, maxBurstTime);
+
+    simulateRoundRobin(processes, numProcesses, timeSlice);
+
+    return 0;
+}
